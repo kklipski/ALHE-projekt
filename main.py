@@ -5,7 +5,7 @@ import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
 # noinspection PyUnresolvedReferences
-from ddpg_agent import Agent
+from ddpg.ddpg_agent import Agent
 
 
 

@@ -4,7 +4,7 @@ import copy
 from collections import namedtuple, deque
 
 # noinspection PyUnresolvedReferences
-from model import Actor, Critic
+from ddpg.model import Actor, Critic
 
 import torch
 import torch.nn.functional as F
