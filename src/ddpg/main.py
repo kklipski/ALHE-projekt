@@ -7,7 +7,7 @@ import numpy as np
 from src.ddpg.buffer import MemoryBuffer
 from src.ddpg.train import Trainer
 
-def main():
+def train_ddpg(actor_path = None, critic_path = None):
     env = gym.make('BipedalWalker-v2')
 
     MAX_EPISODES = 5000
@@ -58,6 +58,9 @@ def main():
             trainer.save_models(_ep)
 
     print('Completed episodes')
+
+def main():
+    train_ddpg(actor_path="./TrainedModels/")
 
 if __name__ == "__main__":
     main()

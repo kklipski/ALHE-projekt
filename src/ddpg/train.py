@@ -77,9 +77,7 @@ class Trainer:
         # Use target actor exploitation policy here for loss evaluation
         a2 = self.target_actor.forward(s2).detach()
         next_val = torch.squeeze(self.target_critic.forward(s2, a2).detach())
-        # y_exp = r + gamma*Q'( s2, pi'(s2))
         y_expected = r1 + GAMMA * next_val
-        # y_pred = Q( s1, a1)
         y_predicted = torch.squeeze(self.critic.forward(s1, a1))
         # compute critic loss, and update the critic
         loss_critic = F.smooth_l1_loss(y_predicted, y_expected)
@@ -96,11 +94,6 @@ class Trainer:
 
         utils.soft_update(self.target_actor, self.actor, TAU)
         utils.soft_update(self.target_critic, self.critic, TAU)
-
-    # if self.iter % 100 == 0:
-    # 	print 'Iteration :- ', self.iter, ' Loss_actor :- ', loss_actor.data.numpy(),\
-    # 		' Loss_critic :- ', loss_critic.data.numpy()
-    # self.iter += 1
 
     def save_models(self, episode_count):
         """
@@ -133,4 +126,3 @@ class Trainer:
         self.critic.load_state_dict(torch.load(path))
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
-        print('Models loaded succesfully')
