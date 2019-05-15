@@ -2,6 +2,7 @@ from src.ddpg.train import Trainer
 from src.ddpg.buffer import MemoryBuffer
 import gym
 
+
 class EvolutionaryDDPG:
     def __init__(self, n_networks, max_buffer):
         self.n = n_networks
@@ -22,6 +23,7 @@ class EvolutionaryDDPG:
             envs.append(env)
 
         return envs
+
     def create_ddpg(self):
         ddpgs = []
         for i in range(self.n):
@@ -42,8 +44,11 @@ class EvolutionaryDDPG:
 
     def train(self):
         pass
+
     def load_ckpt(self):
         pass
+
     def save_ckpt(self):
-        pass
+        for ddpg in self.ddpgs:
+            ddpg.trainer.save_model(self.ddpgs.index(ddpg))    # TODO: add episode_count as argument
 
