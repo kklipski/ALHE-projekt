@@ -15,6 +15,7 @@ class EvolutionaryDDPG:
 
         self.envs = self.create_envs()
         self.ddpgs = self.create_ddpg()
+
     def exploit(self):
         pass
 
@@ -85,18 +86,20 @@ class EvolutionaryDDPG:
 
                 print('NETWORK ',ddpg_idx,' EPISODE : ', iteration, ' SCORE : ', reward)
 
-
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
                 if iteration % self.episodes_ready[ddpg_idx] == 0:
                     self.exploit()
                     self.explore()
 
+            if iteration % 100 == 0:
+                self.save_ckpt()
 
-
-    def load_ckpt(self):
-        pass
+    def load_ckpt(self, episode):
+        for ddpg in self.ddpgs:
+            ddpg.trainer.load_models_path('./Models/' + str(self.ddpgs.index(ddpg)) + '_' + str(episode) + '_actor.pt',
+                                          './Models/' + str(self.ddpgs.index(ddpg)) + '_' + str(episode) + '_critic.pt')
 
     def save_ckpt(self):
         for ddpg in self.ddpgs:
-            ddpg.trainer.save_model(self.ddpgs.index(ddpg))    # TODO: add episode_count as argument
-
+            idx_ddpg = self.ddpgs.index(ddpg)
+            ddpg.trainer.save_models_path(idx_ddpg, self.episodes_counter[idx_ddpg])
