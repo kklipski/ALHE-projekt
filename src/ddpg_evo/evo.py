@@ -11,7 +11,6 @@ class EvolutionaryDDPG:
         self.max_iterations = max_iterations
         self.max_steps = max_steps
         self.episodes_ready = episodes_ready
-        self.episodes_counter = [0 for _ in range(n_networks)]
         self.rams = []
 
         self.envs = self.create_envs()
