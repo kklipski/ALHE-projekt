@@ -121,8 +121,8 @@ class Trainer:
         torch.save(self.target_actor.state_dict(), './Models/' + str(index) + '_' + str(episode_count) + '_actor.pt')
         torch.save(self.target_critic.state_dict(), './Models/' + str(index) + '_' + str(episode_count) + '_critic.pt')
 
-    def load_models_path(self, path):
-        self.actor.load_state_dict(torch.load(path))
-        self.critic.load_state_dict(torch.load(path))
+    def load_models_path(self, path_actor, path_critic):
+        self.actor.load_state_dict(torch.load(path_actor))
+        self.critic.load_state_dict(torch.load(path_critic))
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)

@@ -24,7 +24,7 @@ def train_ddpg(actor_path = None, critic_path = None):
 
     ram = MemoryBuffer(MAX_BUFFER)
     trainer = Trainer(S_DIM, A_DIM, A_MAX, ram)
-
+    trainer.load_models_path(r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_actor.pt",r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_critic.pt")
     for _ep in range(MAX_EPISODES):
         observation = env.reset()
         print('EPISODE :- ', _ep)

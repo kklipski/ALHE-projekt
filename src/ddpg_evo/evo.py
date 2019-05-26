@@ -5,12 +5,13 @@ import numpy as np
 
 
 class EvolutionaryDDPG:
-    def __init__(self, n_networks, max_buffer, max_episodes, max_steps, episodes_ready ):
+    def __init__(self, n_networks, max_buffer, max_iterations, max_steps, episodes_ready):
         self.n = n_networks
         self.max_buffer = max_buffer
-        self.max_episodes = max_episodes
+        self.max_iterations = max_iterations
         self.max_steps = max_steps
         self.episodes_ready = episodes_ready
+        self.episodes_counter = [0 for _ in range(n_networks)]
         self.rams = []
 
         self.envs = self.create_envs()
@@ -50,8 +51,8 @@ class EvolutionaryDDPG:
 
     def train(self):
         reward = None
-        # Ile razy ma się wywołać 100 epizodów
-        for step in range(self.max_episodes):
+        # Liczba iteracji algorytmu
+        for iteration in range(self.max_iterations):
 
             # Dla każdej sieci
             for ddpg_idx in range(self.n):
@@ -59,34 +60,39 @@ class EvolutionaryDDPG:
                 ram = self.rams[ddpg_idx]
                 env = self.envs[ddpg_idx]
 
-                # Dla 100 epizodów
-                for _ep in range(self.episodes_ready):
-                    # Zresetuj środowisko
-                    observation = env.reset()
+                # Zresetuj środowisko
+                observation = env.reset()
 
-                    # Wykonaj max_steps kroków
-                    for r in range(self.max_steps):
-                        env.render()
-                        state = np.float32(observation)
+                # Wykonaj max_steps kroków
+                for r in range(self.max_steps):
+                    env.render()
+                    state = np.float32(observation)
 
-                        action = trainer.get_exploration_action(state)
-                        new_observation, reward, done, info = env.step(action)
+                    action = trainer.get_exploration_action(state)
+                    new_observation, reward, done, info = env.step(action)
 
-                        if done:
-                            new_state = None
-                        else:
-                            new_state = np.float32(new_observation)
-                            # push this exp in ram
-                            ram.add(state, action, reward, new_state)
+                    if done:
+                        new_state = None
+                    else:
+                        new_state = np.float32(new_observation)
 
-                        observation = new_observation
+                        ram.add(state, action, reward, new_state)
 
-                        # perform optimization
-                        trainer.optimize()
-                        if done:
-                            break
+                    observation = new_observation
 
-                    print('NETWORK ',ddpg_idx,' EPISODE : ', _ep + self.episodes_ready * step, ' SCORE : ', reward)
+                    trainer.optimize()
+                    if done:
+                        break
+
+                print('NETWORK ',ddpg_idx,' EPISODE : ', iteration, ' SCORE : ', reward)
+
+
+                # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
+                if iteration % self.episodes_ready[ddpg_idx] == 0:
+                    self.exploit()
+                    self.explore()
+
+
 
     def load_ckpt(self):
         pass
