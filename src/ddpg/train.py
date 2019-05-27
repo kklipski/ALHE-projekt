@@ -40,13 +40,13 @@ class Trainer:
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
 
-    def get_weigths(self):
-        return self.critic.get_weigths(), self.actor.get_weigths()
+    def get_weights(self):
+        return self.critic.get_weights(), self.actor.get_weights()
 
-    def set_weigths(self, weigths):
-        weigths_critic, weigths_actor = weigths
-        self.critic.set_weigths(weigths_critic)
-        self.actor.set_weigths(weigths_actor)
+    def set_weights(self, weights):
+        weights_critic, weights_actor = weights
+        self.critic.set_weights(weights_critic)
+        self.actor.set_weights(weights_actor)
 
     def get_exploitation_action(self, state):
         """

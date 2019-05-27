@@ -56,11 +56,11 @@ class Critic(nn.Module):
 
         return x
 
-    def get_weigths(self):
-        return self.fcs1, self.fcs2, self.fca1, self.fc2, self.fc3
+    def get_weights(self):
+        return [self.fcs1.weight, self.fcs2.weight, self.fca1.weight, self.fc2.weight, self.fc3.weight]
 
-    def set_weigths(self, new_weigths):
-        self.fcs1, self.fcs2, self.fca1, self.fc2, self.fc3 = new_weigths
+    def set_weights(self, new_weights):
+        [self.fcs1.weight, self.fcs2.weight, self.fca1.weight, self.fc2.weight, self.fc3.weight] = new_weights
 
 
 class Actor(nn.Module):
@@ -108,8 +108,8 @@ class Actor(nn.Module):
 
         return action
 
-    def get_weigths(self):
-        return self.fc1, self.fc2, self.fc3, self.fc4
+    def get_weights(self):
+        return [self.fc1.weight, self.fc2.weight, self.fc3.weight, self.fc4.weight]
 
-    def set_weigths(self, new_weigths):
-        self.fc1, self.fc2, self.fc3, self.fc4 =  new_weigths
+    def set_weights(self, new_weights):
+        [self.fc1.weight, self.fc2.weight, self.fc3.weight, self.fc4.weight] =  new_weights

@@ -3,13 +3,16 @@ from src.ddpg.buffer import MemoryBuffer
 import gym
 import numpy as np
 import random
-
+import scipy.stats
+import math
+from statistics import mean
+import torch
 
 class EvolutionaryDDPG:
-    def __init__(self, n_networks, max_buffer, max_iterations, max_steps, episodes_ready):
+    def __init__(self, n_networks, max_buffer, max_episodes, max_steps, episodes_ready):
         self.n = n_networks                 # liczba sieci
         self.max_buffer = max_buffer
-        self.max_iterations = max_iterations
+        self.max_episodes = max_episodes
         self.max_steps = max_steps
         self.episodes_ready = episodes_ready
         self.rams = []
@@ -31,13 +34,22 @@ class EvolutionaryDDPG:
         self.last_ten_scores[idx].append(new_score)
 
 
-    def run_welchs_ttest(self,idx1, idx2):
+    def pick_net(self,idx1, idx2):
         """
         Porównanie nagród cząstkowych dwóch sieci przy użyciu Welch's t-test
 
+        :param idx1: obecna sieć
+        :param idx2: losowo wybrana sieć
         :return: indeks najlepszej sieci
         """
-        return  self.n-1 # :)
+
+        # t, pvalue = scipy.stats.ttest_ind(self.last_ten_scores[idx1], self.last_ten_scores[idx2], equal_var=False)
+        # if math.isnan(t) or math.isnan(pvalue):         # jeśli nie przeszedł welch's t-test TODO: na konsultacje
+        #     return idx1
+        if mean(self.last_ten_scores[idx1]) >  mean(self.last_ten_scores[idx2]):   # porównanie średnich z ostatnich 10 wyników
+            return  idx1 # :)
+        else:                     # przeszło welchs t-test i średnia jest większa
+            return idx2
 
     def exploit(self, idx):
         """
@@ -49,26 +61,47 @@ class EvolutionaryDDPG:
         :param idx: indeks sieci dla której wywołujemy exploit
         """
 
-        # losujemy indeks sieci innej od obecnej
+        # losujemy indeks sieci różnej od obecnej
         random_idx = random.randrange(self.n)
         while random_idx == idx:
             random_idx = random.randrange(self.n)
 
         # wybieramy lepszą sieć
-        best_net_idx = self.run_welchs_ttest(idx, random_idx)
+        best_net_idx = self.pick_net(idx, random_idx)
 
         # jeśli wylosowana sieć okazała się być lepsza
         if idx != best_net_idx:
 
             # podmieniamy wagi
-            self.ddpgs[idx].set_weigths(self.ddpgs[best_net_idx].get_weigths())
+            self.ddpgs[idx].set_weights(self.ddpgs[best_net_idx].get_weights())
             print("<exploit",idx,"> Wczytano nowe wagi z sieci nr. ",best_net_idx)
-        print("<exploit",idx,"> Wagi zostają, są lepsze od sieci nr.",best_net_idx)
+        else:
+            print("<exploit",idx,"> Wagi zostają, są lepsze od sieci nr.",best_net_idx)
 
 
+    def explore(self, idx):
+        net = self.ddpgs[idx]
 
-    def explore(self):
-        pass
+        self.ddpgs[idx].critic.fca1.weight = torch.mul(self.ddpgs[idx].critic.fca1.weight, 0.7)
+        self.ddpgs[idx].critic.fc2.weight =  self.ddpgs[idx].critic.fc2.weight * 0.7
+        self.ddpgs[idx].critic.fc3.weight =  self.ddpgs[idx].critic.fc3.weight * 0.7
+        self.ddpgs[idx].critic.fcs1.weight =  self.ddpgs[idx].critic.fcs1.weight * 0.7
+        self.ddpgs[idx].critic.fcs2.weight = self.ddpgs[idx].critic.fcs2.weight * 0.7
+
+        self.ddpgs[idx].actor.fc1.weight =  self.ddpgs[idx].critic.fc1.weight * 0.7
+        self.ddpgs[idx].actor.fc2.weight = self.ddpgs[idx].critic.fc2.weight * 0.7
+        self.ddpgs[idx].actor.fc3.weight = self.ddpgs[idx].critic.fc3.weight * 0.7
+        self.ddpgs[idx].actor.fc4.weight = self.ddpgs[idx].critic.fc4.weight * 0.7
+        # weights_critic, weights_actor = net.get_weights()
+        #
+        # for idx, _ in enumerate(weights_critic):
+        #     weights_critic[idx] = weights_critic[idx]*0.7
+        #
+        # for idx, _ in enumerate(weights_actor):
+        #     weights_critic[idx] = weights_critic[idx]*0.7
+        #
+        # net.set_weights((weights_critic,weights_actor))
+
 
     def create_envs(self):
         envs = []
@@ -100,7 +133,7 @@ class EvolutionaryDDPG:
     def train(self):
         reward = None
         # Liczba iteracji algorytmu
-        for iteration in range(self.max_iterations):
+        for episode in range(self.max_episodes):
 
             # Dla każdej sieci
             for ddpg_idx in range(self.n):
@@ -133,14 +166,14 @@ class EvolutionaryDDPG:
                         break
 
                 self.append_score(ddpg_idx, reward)
-                print('NETWORK ',ddpg_idx,' EPISODE : ', iteration, ' SCORE : ', reward)
+                print('NETWORK ',ddpg_idx,' EPISODE : ', episode, ' SCORE : ', reward)
 
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
-                if iteration % self.episodes_ready[ddpg_idx] == 0:
+                if episode % self.episodes_ready[ddpg_idx] == 0:
                     self.exploit(ddpg_idx)
-                    self.explore()
+                    self.explore(ddpg_idx)
 
-            if iteration % 100 == 0:
+            if episode % 100 == 0:
                 # self.save_ckpt(iteration)
                 pass
     def load_ckpt(self, episode):
