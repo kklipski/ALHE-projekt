@@ -40,6 +40,14 @@ class Trainer:
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
 
+    def get_weigths(self):
+        return self.critic.get_weigths(), self.actor.get_weigths()
+
+    def set_weigths(self, weigths):
+        weigths_critic, weigths_actor = weigths
+        self.critic.set_weigths(weigths_critic)
+        self.actor.set_weigths(weigths_actor)
+
     def get_exploitation_action(self, state):
         """
         gets the action from target actor added with exploration noise
