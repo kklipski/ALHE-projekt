@@ -7,6 +7,7 @@ import scipy.stats
 import math
 from statistics import mean
 import torch
+import torch.nn as nn
 
 class EvolutionaryDDPG:
     def __init__(self, n_networks, max_buffer, max_episodes, max_steps, episodes_ready):
@@ -14,7 +15,12 @@ class EvolutionaryDDPG:
         self.max_buffer = max_buffer
         self.max_episodes = max_episodes
         self.max_steps = max_steps
+
         self.episodes_ready = episodes_ready
+        if len(self.episodes_ready) < n_networks:
+            print("episodes_ready.len() != n_networks")
+            raise Exception
+
         self.rams = []
 
         # początkowe ostatnie 10 cząstkowych wyników dla wszystkich sieci ustawiamy na -100
@@ -73,25 +79,23 @@ class EvolutionaryDDPG:
         if idx != best_net_idx:
 
             # podmieniamy wagi
-            self.ddpgs[idx].set_weights(self.ddpgs[best_net_idx].get_weights())
+            self.ddpgs[idx].actor.load_state_dict( self.ddpgs[best_net_idx].actor.state_dict() )
+            self.ddpgs[idx].critic.load_state_dict( self.ddpgs[best_net_idx].critic.state_dict() )
+            # podobno potrzebne, jeśli chcemy kontynuować trenowanie, albo eval() zamiast train()
+            self.ddpgs[idx].actor.train()
+            self.ddpgs[idx].critic.train()
+
+
             print("<exploit",idx,"> Wczytano nowe wagi z sieci nr. ",best_net_idx)
         else:
             print("<exploit",idx,"> Wagi zostają, są lepsze od sieci nr.",best_net_idx)
 
 
     def explore(self, idx):
-        net = self.ddpgs[idx]
+        # net = self.ddpgs[idx]
 
-        self.ddpgs[idx].critic.fca1.weight = torch.mul(self.ddpgs[idx].critic.fca1.weight, 0.7)
-        self.ddpgs[idx].critic.fc2.weight =  self.ddpgs[idx].critic.fc2.weight * 0.7
-        self.ddpgs[idx].critic.fc3.weight =  self.ddpgs[idx].critic.fc3.weight * 0.7
-        self.ddpgs[idx].critic.fcs1.weight =  self.ddpgs[idx].critic.fcs1.weight * 0.7
-        self.ddpgs[idx].critic.fcs2.weight = self.ddpgs[idx].critic.fcs2.weight * 0.7
-
-        self.ddpgs[idx].actor.fc1.weight =  self.ddpgs[idx].critic.fc1.weight * 0.7
-        self.ddpgs[idx].actor.fc2.weight = self.ddpgs[idx].critic.fc2.weight * 0.7
-        self.ddpgs[idx].actor.fc3.weight = self.ddpgs[idx].critic.fc3.weight * 0.7
-        self.ddpgs[idx].actor.fc4.weight = self.ddpgs[idx].critic.fc4.weight * 0.7
+        self.ddpgs[idx].multiply_critic(0.7)
+        self.ddpgs[idx].multiply_actor(0.7)
         # weights_critic, weights_actor = net.get_weights()
         #
         # for idx, _ in enumerate(weights_critic):

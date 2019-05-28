@@ -40,13 +40,6 @@ class Trainer:
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
 
-    def get_weights(self):
-        return self.critic.get_weights(), self.actor.get_weights()
-
-    def set_weights(self, weights):
-        weights_critic, weights_actor = weights
-        self.critic.set_weights(weights_critic)
-        self.actor.set_weights(weights_actor)
 
     def get_exploitation_action(self, state):
         """
@@ -136,3 +129,16 @@ class Trainer:
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
         print('Models loaded successfully')
+
+    def multiply_critic(self, value):
+        self.critic.state_dict()['fca1.weight'].data.copy_(self.critic.fca1.weight * value)
+        self.critic.state_dict()['fc2.weight'].data.copy_(self.critic.fc2.weight * value)
+        self.critic.state_dict()['fc3.weight'].data.copy_(self.critic.fc3.weight * value)
+        self.critic.state_dict()['fcs1.weight'].data.copy_(self.critic.fcs1.weight * value)
+        self.critic.state_dict()['fcs2.weight'].data.copy_(self.critic.fcs2.weight * value)
+
+    def multiply_actor(self, value):
+        self.actor.state_dict()['fc1.weight'].data.copy_(self.actor.fc1.weight * value)
+        self.actor.state_dict()['fc2.weight'].data.copy_(self.actor.fc2.weight * value)
+        self.actor.state_dict()['fc3.weight'].data.copy_(self.actor.fc3.weight * value)
+        self.actor.state_dict()['fc4.weight'].data.copy_(self.actor.fc4.weight * value)
