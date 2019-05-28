@@ -102,8 +102,8 @@ class Trainer:
         :param episode_count: the count of episodes iterated
         :return:
         """
-        torch.save(self.target_actor.state_dict(), './Models/' + str(episode_count) + '_actor.pt')
-        torch.save(self.target_critic.state_dict(), './Models/' + str(episode_count) + '_critic.pt')
+        torch.save(self.target_actor.state_dict(), 'Models/' + str(episode_count) + '_actor.pt')
+        torch.save(self.target_critic.state_dict(), 'Models/' + str(episode_count) + '_critic.pt')
         print('Models saved successfully')
 
     def load_models(self, episode):
@@ -112,23 +112,21 @@ class Trainer:
         :param episode: the count of episodes iterated (used to find the file name)
         :return:
         """
-        self.actor.load_state_dict(torch.load('./Models/' + str(episode) + '_actor.pt'))
-        self.critic.load_state_dict(torch.load('./Models/' + str(episode) + '_critic.pt'))
+        self.actor.load_state_dict(torch.load('Models/' + str(episode) + '_actor.pt'))
+        self.critic.load_state_dict(torch.load('Models/' + str(episode) + '_critic.pt'))
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
         print('Models loaded successfully')
 
     def save_models_path(self, index, episode_count):
-        torch.save(self.target_actor.state_dict(), './Models/' + str(index) + '_' + str(episode_count) + '_actor.pt')
-        torch.save(self.target_critic.state_dict(), './Models/' + str(index) + '_' + str(episode_count) + '_critic.pt')
-        print('Models saved successfully')
+        torch.save(self.target_actor.state_dict(), 'Models/' + str(index) + '_' + str(episode_count) + '_actor.pt')
+        torch.save(self.target_critic.state_dict(), 'Models/' + str(index) + '_' + str(episode_count) + '_critic.pt')
 
     def load_models_path(self, path_actor, path_critic):
         self.actor.load_state_dict(torch.load(path_actor))
         self.critic.load_state_dict(torch.load(path_critic))
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
-        print('Models loaded successfully')
 
     def multiply_critic(self, value):
         self.critic.state_dict()['fca1.weight'].data.copy_(self.critic.fca1.weight * value)

@@ -178,14 +178,19 @@ class EvolutionaryDDPG:
                     self.explore(ddpg_idx)
 
             if episode % 100 == 0:
-                # self.save_ckpt(iteration)
-                pass
-    def load_ckpt(self, episode):
-        for ddpg in self.ddpgs:
-            ddpg.load_models_path('./Models/' + str(self.ddpgs.index(ddpg)) + '_' + str(episode) + '_actor.pt',
-                                          './Models/' + str(self.ddpgs.index(ddpg)) + '_' + str(episode) + '_critic.pt')
+                self.save_ckpt(episode)
 
-    def save_ckpt(self, iteration):
+    def load_ckpt(self, episode):
+        idx_ddpg = 0
         for ddpg in self.ddpgs:
-            idx_ddpg = self.ddpgs.index(ddpg)
-            ddpg.save_models_path(idx_ddpg, iteration)
+            ddpg.load_models_path('Models/' + str(idx_ddpg) + '_' + str(episode) + '_actor.pt',
+                                  'Models/' + str(idx_ddpg) + '_' + str(episode) + '_critic.pt')
+            idx_ddpg = idx_ddpg + 1
+        print('Models loaded successfully')
+
+    def save_ckpt(self, episode):
+        idx_ddpg = 0
+        for ddpg in self.ddpgs:
+            ddpg.save_models_path(idx_ddpg, episode)
+            idx_ddpg = idx_ddpg + 1
+        print('Models saved successfully')
