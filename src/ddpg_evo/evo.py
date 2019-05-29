@@ -9,8 +9,9 @@ from statistics import mean
 import torch
 import torch.nn as nn
 
+
 class EvolutionaryDDPG:
-    def __init__(self, n_networks, max_buffer, max_episodes, max_steps, episodes_ready):
+    def __init__(self, n_networks, max_buffer, max_episodes, max_steps, episodes_ready, explore_prob, explore_factors):
         self.n = n_networks                 # liczba sieci
         self.max_buffer = max_buffer
         self.max_episodes = max_episodes
@@ -21,6 +22,9 @@ class EvolutionaryDDPG:
             print("episodes_ready.len() != n_networks")
             raise Exception
 
+        self.explore_prob = explore_prob - int(explore_prob)
+        self.explore_factors = explore_factors
+
         self.rams = []
 
         # początkowe ostatnie 10 cząstkowych wyników dla wszystkich sieci ustawiamy na -100
@@ -28,7 +32,6 @@ class EvolutionaryDDPG:
 
         self.envs = self.create_envs()
         self.ddpgs = self.create_ddpg()
-
 
     def append_score(self, idx, new_score):
         """
@@ -39,8 +42,7 @@ class EvolutionaryDDPG:
         self.last_ten_scores[idx] = self.last_ten_scores[idx][1:]
         self.last_ten_scores[idx].append(new_score)
 
-
-    def pick_net(self,idx1, idx2):
+    def pick_net(self, idx1, idx2):
         """
         Porównanie nagród cząstkowych dwóch sieci przy użyciu Welch's t-test
 
@@ -49,13 +51,14 @@ class EvolutionaryDDPG:
         :return: indeks najlepszej sieci
         """
 
-        # t, pvalue = scipy.stats.ttest_ind(self.last_ten_scores[idx1], self.last_ten_scores[idx2], equal_var=False)
-        # if math.isnan(t) or math.isnan(pvalue):         # jeśli nie przeszedł welch's t-test TODO: na konsultacje
-        #     return idx1
-        if mean(self.last_ten_scores[idx1]) >  mean(self.last_ten_scores[idx2]):   # porównanie średnich z ostatnich 10 wyników
-            return  idx1 # :)
-        else:                     # przeszło welchs t-test i średnia jest większa
-            return idx2
+        statistic, pvalue = scipy.stats.ttest_ind(self.last_ten_scores[idx1], self.last_ten_scores[idx2], equal_var=False)
+        if pvalue <= 0.05:
+            if mean(self.last_ten_scores[idx1]) > mean(self.last_ten_scores[idx2]):  # porównanie średnich z ostatnich 10 wyników
+                return idx1  # :)
+            else:  # przeszło welch's t-test i średnia jest większa
+                return idx2
+        else:
+            return idx1
 
     def exploit(self, idx):
         """
@@ -79,23 +82,28 @@ class EvolutionaryDDPG:
         if idx != best_net_idx:
 
             # podmieniamy wagi
-            self.ddpgs[idx].actor.load_state_dict( self.ddpgs[best_net_idx].actor.state_dict() )
-            self.ddpgs[idx].critic.load_state_dict( self.ddpgs[best_net_idx].critic.state_dict() )
+            self.ddpgs[idx].actor.load_state_dict(self.ddpgs[best_net_idx].actor.state_dict())
+            self.ddpgs[idx].critic.load_state_dict(self.ddpgs[best_net_idx].critic.state_dict())
             # podobno potrzebne, jeśli chcemy kontynuować trenowanie, albo eval() zamiast train()
             self.ddpgs[idx].actor.train()
             self.ddpgs[idx].critic.train()
 
-
-            print("<exploit",idx,"> Wczytano nowe wagi z sieci nr. ",best_net_idx)
+            print("<exploit", idx, "> Wczytano nowe wagi z sieci nr. ", best_net_idx)
         else:
-            print("<exploit",idx,"> Wagi zostają, są lepsze od sieci nr.",best_net_idx)
-
+            print("<exploit", idx, "> Wagi zostają, są lepsze od sieci nr.", random_idx)
 
     def explore(self, idx):
         # net = self.ddpgs[idx]
 
-        self.ddpgs[idx].multiply_critic(0.7)
-        self.ddpgs[idx].multiply_actor(0.7)
+        if random.random() < 0.5:
+            self.ddpgs[idx].multiply_critic(self.explore_factors[0])
+            self.ddpgs[idx].multiply_actor(self.explore_factors[0])
+            print("<explore", idx, "> Przemnożono wagi przez: ", self.explore_factors[0])
+        else:
+            self.ddpgs[idx].multiply_critic(self.explore_factors[1])
+            self.ddpgs[idx].multiply_actor(self.explore_factors[1])
+            print("<explore", idx, "> Przemnożono wagi przez: ", self.explore_factors[1])
+
         # weights_critic, weights_actor = net.get_weights()
         #
         # for idx, _ in enumerate(weights_critic):
@@ -105,7 +113,6 @@ class EvolutionaryDDPG:
         #     weights_critic[idx] = weights_critic[idx]*0.7
         #
         # net.set_weights((weights_critic,weights_actor))
-
 
     def create_envs(self):
         envs = []
@@ -148,13 +155,17 @@ class EvolutionaryDDPG:
                 # Zresetuj środowisko
                 observation = env.reset()
 
+                # Zliczamy całkowity uzyskany wynik
+                total_reward = 0
+
                 # Wykonaj max_steps kroków
                 for r in range(self.max_steps):
-                    env.render()
+                    # env.render()
                     state = np.float32(observation)
 
                     action = trainer.get_exploration_action(state)
                     new_observation, reward, done, info = env.step(action)
+                    total_reward = total_reward + reward
 
                     if done:
                         new_state = None
@@ -169,13 +180,14 @@ class EvolutionaryDDPG:
                     if done:
                         break
 
-                self.append_score(ddpg_idx, reward)
-                print('NETWORK ',ddpg_idx,' EPISODE : ', episode, ' SCORE : ', reward)
+                self.append_score(ddpg_idx, total_reward)
+                print('NETWORK ', ddpg_idx, ' EPISODE : ', episode, ' SCORE : ', total_reward)
 
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
-                if episode % self.episodes_ready[ddpg_idx] == 0:
+                if (episode % self.episodes_ready[ddpg_idx] == 0) & (episode != 0):
                     self.exploit(ddpg_idx)
-                    self.explore(ddpg_idx)
+                    if random.random() < self.explore_prob:
+                        self.explore(ddpg_idx)
 
             if episode % 100 == 0:
                 self.save_ckpt(episode)
