@@ -184,7 +184,7 @@ class EvolutionaryDDPG:
                 print('NETWORK ', ddpg_idx, ' EPISODE : ', episode, ' SCORE : ', total_reward)
 
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
-                if (episode % self.episodes_ready[ddpg_idx] == 0) & (episode != 0):
+                if 1==1 or (episode % self.episodes_ready[ddpg_idx] == 0) & (episode != 0):
                     self.exploit(ddpg_idx)
                     if random.random() < self.explore_prob:
                         self.explore(ddpg_idx)

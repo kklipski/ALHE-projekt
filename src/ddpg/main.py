@@ -24,17 +24,19 @@ def train_ddpg(actor_path = None, critic_path = None):
 
     ram = MemoryBuffer(MAX_BUFFER)
     trainer = Trainer(S_DIM, A_DIM, A_MAX, ram)
-    trainer.load_models_path(r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_actor.pt",r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_critic.pt")
+    trainer.load_models_path(r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\kamil_nowe\0_2000_actor.pt",r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\kamil_nowe\0_2000_critic.pt")
+    trainer.actor.eval()
+    trainer.critic.eval()
     for _ep in range(MAX_EPISODES):
         observation = env.reset()
-        print('EPISODE :- ', _ep)
+        total_reward = 0
         for r in range(MAX_STEPS):
             env.render()
             state = np.float32(observation)
 
             action = trainer.get_exploration_action(state)
             new_observation, reward, done, info = env.step(action)
-
+            total_reward += reward
             if done:
                 new_state = None
             else:
@@ -49,13 +51,14 @@ def train_ddpg(actor_path = None, critic_path = None):
             if done:
                 break
 
+        print('EPISODE :- ', _ep, ' TOTAL REWARD :- ',total_reward)
         # check memory consumption and clear memory
         gc.collect()
         # process = psutil.Process(os.getpid())
         # print(process.memory_info().rss)
 
-        if _ep % 100 == 0:
-            trainer.save_models(_ep)
+        # if _ep % 100 == 0:
+        #     trainer.save_models(_ep)
 
     print('Completed episodes')
 
