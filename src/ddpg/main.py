@@ -7,37 +7,36 @@ import numpy as np
 from src.ddpg.buffer import MemoryBuffer
 from src.ddpg.train import Trainer
 
-def train_ddpg(actor_path = None, critic_path = None):
+
+def train_ddpg(actor_path=None, critic_path=None):
     env = gym.make('BipedalWalker-v2')
 
-    MAX_EPISODES = 5000
-    MAX_STEPS = 1000
-    MAX_BUFFER = 1000000
-    MAX_TOTAL_REWARD = 300
-    S_DIM = env.observation_space.shape[0]
-    A_DIM = env.action_space.shape[0]
-    A_MAX = env.action_space.high[0]
+    max_episodes = 5000
+    max_steps = 1000
+    max_buffer = 1000000
+    s_dim = env.observation_space.shape[0]
+    a_dim = env.action_space.shape[0]
+    a_max = env.action_space.high[0]
 
-    print(' State Dimensions :- ', S_DIM)
-    print(' Action Dimensions :- ', A_DIM)
-    print(' Action Max :- ', A_MAX)
+    print(' State Dimensions :- ', s_dim)
+    print(' Action Dimensions :- ', a_dim)
+    print(' Action Max :- ', a_max)
 
-    ram = MemoryBuffer(MAX_BUFFER)
-    trainer = Trainer(S_DIM, A_DIM, A_MAX, ram)
-    trainer.load_models_path(r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_actor.pt",r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_critic.pt")
-    for _ep in range(MAX_EPISODES):
+    ram = MemoryBuffer(max_buffer)
+    trainer = Trainer(s_dim, a_dim, a_max, ram)
+    # trainer.load_models_path(r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_actor.pt",
+    #                          r"C:\Users\rzaro\Repositories\ALHE-projekt\SavedModels\Models\100_critic.pt")
+    for _ep in range(max_episodes):
         observation = env.reset()
         print('EPISODE :- ', _ep)
-        for r in range(MAX_STEPS):
-            env.render()
+        for r in range(max_steps):
+            # env.render()
             state = np.float32(observation)
 
             action = trainer.get_exploration_action(state)
             new_observation, reward, done, info = env.step(action)
 
-            if done:
-                new_state = None
-            else:
+            if not done:
                 new_state = np.float32(new_observation)
                 # push this exp in ram
                 ram.add(state, action, reward, new_state)
@@ -59,8 +58,10 @@ def train_ddpg(actor_path = None, critic_path = None):
 
     print('Completed episodes')
 
+
 def main():
-    train_ddpg(actor_path="./TrainedModels/")
+    train_ddpg()
+
 
 if __name__ == "__main__":
     main()

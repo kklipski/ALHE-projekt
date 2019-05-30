@@ -1,7 +1,6 @@
+import numpy as np
 import random
 from collections import deque
-
-import numpy as np
 
 
 class MemoryBuffer:
@@ -17,7 +16,6 @@ class MemoryBuffer:
         :param count: batch size
         :return: batch (numpy array)
         """
-        batch = []
         count = min(count, self.len)
         batch = random.sample(self.buffer, count)
 

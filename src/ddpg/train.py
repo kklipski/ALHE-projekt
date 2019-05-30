@@ -1,8 +1,9 @@
 from __future__ import division
 
-from src.ddpg.model import Actor, Critic
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as f
+
+from src.ddpg.model import Actor, Critic
 from src.ddpg import utils
 from torch.autograd import Variable
 
@@ -39,7 +40,6 @@ class Trainer:
 
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
-
 
     def get_exploitation_action(self, state):
         """
@@ -81,7 +81,7 @@ class Trainer:
         y_expected = r1 + GAMMA * next_val
         y_predicted = torch.squeeze(self.critic.forward(s1, a1))
         # compute critic loss, and update the critic
-        loss_critic = F.smooth_l1_loss(y_predicted, y_expected)
+        loss_critic = f.smooth_l1_loss(y_predicted, y_expected)
         self.critic_optimizer.zero_grad()
         loss_critic.backward()
         self.critic_optimizer.step()
@@ -128,15 +128,15 @@ class Trainer:
         utils.hard_update(self.target_actor, self.actor)
         utils.hard_update(self.target_critic, self.critic)
 
-    def multiply_critic(self, value):
-        self.critic.state_dict()['fca1.weight'].data.copy_(self.critic.fca1.weight * value)
-        self.critic.state_dict()['fc2.weight'].data.copy_(self.critic.fc2.weight * value)
-        self.critic.state_dict()['fc3.weight'].data.copy_(self.critic.fc3.weight * value)
-        self.critic.state_dict()['fcs1.weight'].data.copy_(self.critic.fcs1.weight * value)
-        self.critic.state_dict()['fcs2.weight'].data.copy_(self.critic.fcs2.weight * value)
+    # def multiply_critic(self, value):
+    #     self.critic.state_dict()['fca1.weight'].data.copy_(self.critic.fca1.weight * value)
+    #     self.critic.state_dict()['fc2.weight'].data.copy_(self.critic.fc2.weight * value)
+    #     self.critic.state_dict()['fc3.weight'].data.copy_(self.critic.fc3.weight * value)
+    #     self.critic.state_dict()['fcs1.weight'].data.copy_(self.critic.fcs1.weight * value)
+    #     self.critic.state_dict()['fcs2.weight'].data.copy_(self.critic.fcs2.weight * value)
 
-    def multiply_actor(self, value):
-        self.actor.state_dict()['fc1.weight'].data.copy_(self.actor.fc1.weight * value)
-        self.actor.state_dict()['fc2.weight'].data.copy_(self.actor.fc2.weight * value)
-        self.actor.state_dict()['fc3.weight'].data.copy_(self.actor.fc3.weight * value)
-        self.actor.state_dict()['fc4.weight'].data.copy_(self.actor.fc4.weight * value)
+    # def multiply_actor(self, value):
+    #     self.actor.state_dict()['fc1.weight'].data.copy_(self.actor.fc1.weight * value)
+    #     self.actor.state_dict()['fc2.weight'].data.copy_(self.actor.fc2.weight * value)
+    #     self.actor.state_dict()['fc3.weight'].data.copy_(self.actor.fc3.weight * value)
+    #     self.actor.state_dict()['fc4.weight'].data.copy_(self.actor.fc4.weight * value)

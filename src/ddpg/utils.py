@@ -1,7 +1,6 @@
-import shutil
-
 import numpy as np
 import torch
+import shutil
 
 
 def soft_update(target, source, tau):
