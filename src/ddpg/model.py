@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn.functional as f
 
 EPS = 0.003
 
@@ -46,17 +46,15 @@ class Critic(nn.Module):
         :param action: Input Action (Torch Variable : [n,action_dim] )
         :return: Value function : Q(S,a) (Torch Variable : [n,1] )
         """
-        s1 = F.relu(self.fcs1(state))
-        s2 = F.relu(self.fcs2(s1))
-        a1 = F.relu(self.fca1(action))
+        s1 = f.relu(self.fcs1(state))
+        s2 = f.relu(self.fcs2(s1))
+        a1 = f.relu(self.fca1(action))
         x = torch.cat((s2, a1), dim=1)
 
-        x = F.relu(self.fc2(x))
+        x = f.relu(self.fc2(x))
         x = self.fc3(x)
 
         return x
-
-
 
 
 class Actor(nn.Module):
@@ -95,10 +93,10 @@ class Actor(nn.Module):
         :param state: Input state (Torch Variable : [n,state_dim] )
         :return: Output action (Torch Variable: [n,action_dim] )
         """
-        x = F.relu(self.fc1(state))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        action = F.tanh(self.fc4(x))
+        x = f.relu(self.fc1(state))
+        x = f.relu(self.fc2(x))
+        x = f.relu(self.fc3(x))
+        action = f.tanh(self.fc4(x))
 
         action = action * self.action_lim
 
