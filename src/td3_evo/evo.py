@@ -24,6 +24,7 @@ class EvolutionaryTD3:
         self.explore_prob = explore_prob - int(explore_prob)
         self.explore_factors = explore_factors
 
+        self.lr = 0.001
 
         # początkowe ostatnie 10 cząstkowych wyników dla wszystkich sieci ustawiamy na -100
         self.last_ten_scores = [[-100 for _ in range(10)] for _ in range(self.n)]
@@ -32,7 +33,6 @@ class EvolutionaryTD3:
         self.policies = self.create_policies()
         self.replay_buffers = self.create_replay_buffers()
 
-        self.lr = 0.001
 
 
     def create_envs(self):
@@ -53,7 +53,7 @@ class EvolutionaryTD3:
         return policies
 
     def create_replay_buffers(self):
-        return [ReplayBuffer() for _ in self.n]
+        return [ReplayBuffer() for _ in range(self.n)]
 
     def multiply_weights(self, idx, factor):
         for param in self.policies[idx].actor.parameters():
@@ -167,7 +167,7 @@ class EvolutionaryTD3:
         # Liczba iteracji algorytmu
         for episode in range(self.max_episodes):
 
-            for idx in self.n:
+            for idx in range(self.n):
 
                 # logging variables:
                 avg_reward = 0
