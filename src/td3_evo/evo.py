@@ -32,6 +32,7 @@ class EvolutionaryTD3:
         self.envs = self.create_envs()
         self.policies = self.create_policies()
         self.replay_buffers = self.create_replay_buffers()
+        self.stop_condition = 150
 
 
 
@@ -175,6 +176,8 @@ class EvolutionaryTD3:
                 log_f = open("log.txt","w+")
 
                 state = self.envs[idx].reset()
+                no_reward_counter = -100  # jeśli dojdzie do 100 uznajemy, że robot się nie porusza
+                start_no_reward_counter = 0
                 for t in range(max_timesteps):
                     self.envs[idx].render()
                     # select action and add exploration noise:
@@ -184,6 +187,17 @@ class EvolutionaryTD3:
 
                     # take action in env:
                     next_state, reward, done, _ = self.envs[idx].step(action)
+
+                    # jeśli robot stoi w miejscu przez stop_condition kroków, zakończ pętlę
+                    if no_reward_counter == 0:
+                        start_no_reward_counter = reward
+                    if start_no_reward_counter-0.05 < reward < start_no_reward_counter+0.05:
+                        no_reward_counter += 1
+                    else:
+                        no_reward_counter = 0
+                    if no_reward_counter > self.stop_condition:
+                        break
+
                     self.replay_buffers[idx].add((state, action, reward, next_state, float(done)))
                     state = next_state
 
