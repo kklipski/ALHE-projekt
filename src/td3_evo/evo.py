@@ -85,35 +85,55 @@ class EvolutionaryTD3:
             random_idx = random.randrange(self.n)
 
         # wybieramy lepszą sieć
-        best_net_idx = self.pick_net(idx, random_idx)
+        best_net_idx, mean_diff = self.pick_net(idx, random_idx)
 
         # jeśli wylosowana sieć okazała się być lepsza
         if idx != best_net_idx:
+            # kopiujemy tylko część wag z nowej sieci - im większa jest różnica między średnimi cząstkowymi nagrodami
+            # dla rozpatrywanych sieci, tym więcej wag zostanie podmienionych (ich ilość zmienia się progowo)
+            if 0 <= mean_diff < 10:
+                threshold = 0.1
+            elif 10 <= mean_diff < 20:
+                threshold = 0.2
+            elif 20 <= mean_diff < 30:
+                threshold = 0.3
+            elif 30 <= mean_diff < 40:
+                threshold = 0.4
+            elif 40 <= mean_diff < 50:
+                threshold = 0.5
+            else:
+                threshold = 0.6
 
             # podmieniamy wagi
             new_param = self.policies[best_net_idx].actor.parameters()
             for param in self.policies[idx].actor.parameters():
-                param.data.copy_(next(new_param))
+                if random.random() < threshold:
+                    param.data.copy_(next(new_param))
 
             new_param = self.policies[best_net_idx].actor_target.parameters()
             for param in self.policies[idx].actor.parameters():
-                param.data.copy_(next(new_param))
+                if random.random() < threshold:
+                    param.data.copy_(next(new_param))
 
             new_param = self.policies[best_net_idx].critic_1.parameters()
             for param in self.policies[idx].critic_1.parameters():
-                param.data.copy_(next(new_param))
+                if random.random() < threshold:
+                    param.data.copy_(next(new_param))
 
             new_param = self.policies[best_net_idx].critic_1_target.parameters()
             for param in self.policies[idx].critic_1.parameters():
-                param.data.copy_(next(new_param))
+                if random.random() < threshold:
+                    param.data.copy_(next(new_param))
 
             new_param = self.policies[best_net_idx].critic_2.parameters()
             for param in self.policies[idx].actor.parameters():
-                param.data.copy_(next(new_param))
+                if random.random() < threshold:
+                    param.data.copy_(next(new_param))
 
             new_param = self.policies[best_net_idx].critic_2_target.parameters()
             for param in self.policies[idx].actor.parameters():
-                param.data.copy_(next(new_param))
+                if random.random() < threshold:
+                    param.data.copy_(next(new_param))
 
             print("<exploit", idx, "> Wczytano nowe wagi z sieci nr ", best_net_idx)
         else:
@@ -140,12 +160,15 @@ class EvolutionaryTD3:
                                                   equal_var=False)
         if pvalue <= 0.05:
             # przeszło welch's t-test, teraz porównanie średnich z ostatnich 10 wyników
-            if mean(self.last_ten_scores[idx1]) > mean(self.last_ten_scores[idx2]):
-                return idx1  # obecna sieć lepsza
+            mean_curr = mean(self.last_ten_scores[idx1])
+            mean_rand = mean(self.last_ten_scores[idx2])
+            mean_diff = abs(mean_curr - mean_rand)
+            if mean_curr > mean_rand:
+                return idx1, 0  # obecna sieć lepsza
             else:
-                return idx2  # losowo wybrana sieć lepsza
+                return idx2, mean_diff  # losowo wybrana sieć lepsza
         else:
-            return idx1  # nie przeszło welch's t-test
+            return idx1, 0  # nie przeszło welch's t-test
 
     def train(self):
         ######### Hyperparameters #########
@@ -194,6 +217,12 @@ class EvolutionaryTD3:
                     if done or t==(max_timesteps-1):
                         self.policies[idx].update(self.replay_buffers[idx], t, batch_size, gamma, polyak, policy_noise, noise_clip, policy_delay)
                         break
+
+                # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
+                if episode % self.episodes_ready[idx] == 0 and episode != 0:
+                    self.exploit(idx)
+                    if random.random() < self.explore_prob:
+                        self.explore(idx)
 
                 # logging updates:
                 log_f.write('{},{}\n'.format(episode, ep_reward))
