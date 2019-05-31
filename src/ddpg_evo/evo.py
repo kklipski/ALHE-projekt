@@ -78,14 +78,6 @@ class EvolutionaryDDPG:
         # jeśli wylosowana sieć okazała się być lepsza
         if idx != best_net_idx:
 
-            # OLD METHOD
-            # podmieniamy wagi
-            # self.ddpgs[idx].actor.load_state_dict(self.ddpgs[best_net_idx].actor.state_dict())
-            # self.ddpgs[idx].critic.load_state_dict(self.ddpgs[best_net_idx].critic.state_dict())
-            # podobno potrzebne, jeśli chcemy kontynuować trenowanie, albo eval() zamiast train()
-            # self.ddpgs[idx].actor.train()
-            # self.ddpgs[idx].critic.train()
-
             # podmieniamy wagi
             new_param = self.ddpgs[best_net_idx].actor.parameters()
             for param in self.ddpgs[idx].actor.parameters():
@@ -99,40 +91,20 @@ class EvolutionaryDDPG:
             print("<exploit", idx, "> Wagi zostają, są lepsze od sieci nr ", random_idx)
 
     def explore(self, idx):
-        # VERY OLD METHOD
-        # net = self.ddpgs[idx]
 
         if random.random() < 0.5:
-            # OLD METHOD
-            # self.ddpgs[idx].multiply_critic(self.explore_factors[0])
-            # self.ddpgs[idx].multiply_actor(self.explore_factors[0])
-
             for param in self.ddpgs[idx].actor.parameters():
                 param.data.mul_(self.explore_factors[0])
             for param in self.ddpgs[idx].critic.parameters():
                 param.data.mul_(self.explore_factors[0])
             print("<explore", idx, "> Przemnożono wagi przez ", self.explore_factors[0])
         else:
-            # OLD METHOD
-            # self.ddpgs[idx].multiply_critic(self.explore_factors[1])
-            # self.ddpgs[idx].multiply_actor(self.explore_factors[1])
 
             for param in self.ddpgs[idx].actor.parameters():
                 param.data.mul_(self.explore_factors[1])
             for param in self.ddpgs[idx].critic.parameters():
                 param.data.mul_(self.explore_factors[1])
             print("<explore", idx, "> Przemnożono wagi przez ", self.explore_factors[1])
-
-        # VERY OLD METHOD
-        # weights_critic, weights_actor = net.get_weights()
-        #
-        # for idx, _ in enumerate(weights_critic):
-        #     weights_critic[idx] = weights_critic[idx]*0.7
-        #
-        # for idx, _ in enumerate(weights_actor):
-        #     weights_critic[idx] = weights_critic[idx]*0.7
-        #
-        # net.set_weights((weights_critic,weights_actor))
 
     def pick_net(self, idx1, idx2):
         """

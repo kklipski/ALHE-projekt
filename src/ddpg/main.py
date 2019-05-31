@@ -48,13 +48,12 @@ def train_ddpg(actor_path=None, critic_path=None):
             if done:
                 break
 
-        # check memory consumption and clear memory
         gc.collect()
         # process = psutil.Process(os.getpid())
         # print(process.memory_info().rss)
 
-        if _ep % 100 == 0:
-            trainer.save_models(_ep)
+        # if _ep % 100 == 0:
+        #     trainer.save_models(_ep)
 
     print('Completed episodes')
 
