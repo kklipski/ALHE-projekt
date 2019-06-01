@@ -208,6 +208,8 @@ class EvolutionaryTD3:
                 stuck_pen_flag = False
                 stuck_pen = 0
 
+                stand_flag = False
+
                 state = self.envs[idx].reset()
                 no_reward_counter = -100  # jeśli dojdzie do 100 uznajemy, że robot się nie porusza
                 start_no_reward_counter = 0
@@ -264,8 +266,11 @@ class EvolutionaryTD3:
                     avg_reward += reward
                     ep_reward += reward
 
+                    # jeśli robot stoi w miejscu dłuższy czas, ustaw flagę
+                    stand_flag = no_reward_counter > self.stop_condition
+
                     # if episode is done then update policy:
-                    if done or t == (max_timesteps - 1) or no_reward_counter > self.stop_condition:
+                    if done or t == (max_timesteps - 1) or stand_flag:
                         # print("UPDATING POLICES...")
                         self.policies[idx].update(self.replay_buffers[idx], t, batch_size, gamma, polyak, policy_noise, noise_clip, policy_delay)
                         break
@@ -293,6 +298,8 @@ class EvolutionaryTD3:
                     log_f.write(",exploit:" + str(exploit_idx) + "," + str(exploit_num))
                 if explore_flag:
                     log_f.write(",explore:" + str(explore_multiplier))
+                if stand_flag:
+                    log_f.write(",standing")
                 log_f.write("\n")
                 log_f.flush()
                 ep_reward = 0
