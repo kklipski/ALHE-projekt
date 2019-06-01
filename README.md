@@ -20,9 +20,9 @@ git clone https://github.com/kklipski/ALHE-projekt.git
    Przykład dla konfiguracji: PyTorch Build: *Stable (1.1)*, Your OS: *Windows*, Package: *Pip*, Language: *Python 3.7*, CUDA: *10.0*:
 ```
 pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp37-cp37m-win_amd64.whl
-``` z
-6. W celu przeprowadzenia uczenia ze wzmocnieniem należy uruchomić skrypt [main.py](src/ddpg/main.py) z folderu [ddpg](src/ddpg).
-7. W celu przeprowadzenia uczenia ze wzmocnieniem połączonego z algorytmem ewolucyjnym należy uruchomić skrypt [test_evo.py](src/ddpg_evo/test_evo.py) z folderu [ddpg_evo}(src/ddpg_evo).
+```
+6. W celu przeprowadzenia uczenia ze wzmocnieniem należy uruchomić skrypt [train.py](src/td3/train.py) z folderu [td3](src/td3).
+7. W celu przeprowadzenia uczenia ze wzmocnieniem połączonego z algorytmem ewolucyjnym należy uruchomić skrypt [test_evo.py](src/td3_evo/test_evo.py) z folderu [td3_evo](src/td3_evo).
 
 ## Autorzy
 - **Lipski Kamil** - [kklipski](https://github.com/kklipski)
@@ -31,4 +31,5 @@ pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp37-cp37m-win_a
 ## Źródła
 - https://arxiv.org/pdf/1711.09846.pdf - Population Based Training of Neural Networks (article)
 - https://deepmind.com/blog/population-based-training-neural-networks/ - Population based training of neural networks (blog post)
-- https://github.com/vy007vikas/PyTorch-ActorCriticRL - PyTorch implementation of DDPG algorithm for continuous action reinforcement learning problem (used in the project)
+- https://github.com/vy007vikas/PyTorch-ActorCriticRL - PyTorch implementation of DDPG algorithm for continuous action reinforcement learning problem (used in the project) (**DEPRECATED**)
+- https://github.com/nikhilbarhate99/TD3-PyTorch-BipedalWalker-v2 - Twin Delayed DDPG (TD3) PyTorch solution for Roboschool and Box2d environment (used in the project)
