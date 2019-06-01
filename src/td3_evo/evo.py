@@ -129,7 +129,7 @@ class EvolutionaryTD3:
             self.copy_weights(self.policies[best_net_idx].critic_2, self.policies[idx].critic_2, to_pick)
             self.copy_weights(self.policies[best_net_idx].critic_2_target, self.policies[idx].critic_2_target, to_pick)
 
-            print("<exploit", idx, "> Wczytano nowe wagi z sieci nr ", best_net_idx, random_idx, "\t",
+            print("<exploit", idx, "> Wczytano nowe wagi z sieci nr ", random_idx, "\t",
                   mean(self.last_x_scores[idx]), " vs. ",
                   mean(self.last_x_scores[best_net_idx]))
         else:
@@ -176,9 +176,9 @@ class EvolutionaryTD3:
 
     def train(self):
         ######### Hyperparameters #########
-        env_name = "BipedalWalker-v2"
+        # env_name = "BipedalWalker-v2"
         log_interval = 10           # print avg reward after interval
-        random_seed = 0
+        # random_seed = 0
         gamma = 0.99                # discount for future rewards
         batch_size = 100            # num of transitions sampled from replay buffer
         exploration_noise = 0.1
@@ -188,7 +188,7 @@ class EvolutionaryTD3:
         policy_delay = 2            # delayed policy updates parameter
         max_timesteps = 2000        # max timesteps in one episode
         directory = "./preTrained/"  # save trained models
-        filename = "TD3_{}_{}".format(env_name, random_seed)
+        filename = "TD3"
         ###################################
 
         log_f = open("log.txt", "w+")
@@ -228,6 +228,24 @@ class EvolutionaryTD3:
                         no_reward_counter += 1
                     else:
                         no_reward_counter = 0
+
+                    if no_reward_counter > self.stop_condition:
+                        if -100 <= ep_reward:
+                            reward = reward + -100
+                        elif -100 < ep_reward <= -50:
+                            reward = reward + -50
+                        elif -50 < ep_reward <= 0:
+                            reward = reward + -40
+                        elif 0 < ep_reward <= 50:
+                            reward = reward + -30
+                        elif 50 < ep_reward <= 100:
+                            reward = reward + -20
+                        elif 100 < ep_reward <= 150:
+                            reward = reward + -10
+                        elif 150 < ep_reward <= 200:
+                            reward = reward + -5
+                        else:
+                            reward = reward + 0
 
                     self.replay_buffers[idx].add((state, action, reward, next_state, float(done)))
                     state = next_state
@@ -269,13 +287,13 @@ class EvolutionaryTD3:
                 # if avg reward > 300 then save and stop traning:
                 if (avg_reward/log_interval) >= 300:
                     print("########## Solved! ###########")
-                    name = filename + '_solved'
+                    name = filename + '_net_{}_solved'.format(idx)
                     self.policies[idx].save(directory, name)
                     log_f.close()
                     break
 
-                if episode % 300 == 0 and episode != 0:
-                    self.policies[idx].save(directory, filename)
+            if episode % 300 == 0 and episode != 0:
+                self.save_nets(episode, directory, filename)
 
     def append_score(self, idx, new_score):
         """
@@ -285,5 +303,14 @@ class EvolutionaryTD3:
         """
         self.last_x_scores[idx] = self.last_x_scores[idx][1:]
         self.last_x_scores[idx].append(new_score)
+
+    def save_nets(self, episode, directory, filename):
+        idx_td3 = 0
+        for td3 in self.policies:
+            name = filename + '_ep_{}_net_{}'.format(episode, idx_td3)
+            td3.save(directory, name)
+            idx_td3 = idx_td3 + 1
+        print('Models saved successfully')
+
 
 
