@@ -92,49 +92,103 @@ class EvolutionaryTD3:
         if idx != best_net_idx:
             # kopiujemy tylko część wag z nowej sieci - im większa jest różnica między średnimi cząstkowymi nagrodami
             # dla rozpatrywanych sieci, tym więcej wag zostanie podmienionych (ich ilość zmienia się progowo)
-            if 0 <= mean_diff < 10:
-                threshold = 0.1
-            elif 10 <= mean_diff < 20:
-                threshold = 0.2
-            elif 20 <= mean_diff < 30:
-                threshold = 0.3
-            elif 30 <= mean_diff < 40:
-                threshold = 0.4
-            elif 40 <= mean_diff < 50:
-                threshold = 0.5
+            if 0 <= mean_diff < 30:
+                threshold = 0.33
             else:
-                threshold = 0.6
+                threshold = 0.66
 
             # podmieniamy wagi
+            condition = 0  # -1 - do not copy bias, 0 - weight, 1 - copy bias
+
             new_param = self.policies[best_net_idx].actor.parameters()
             for param in self.policies[idx].actor.parameters():
-                if random.random() < threshold:
+                if condition == -1:
+                    next(new_param)
+                    condition = 0
+                elif condition == 0:
+                    if random.random() < threshold:
+                        param.data.copy_(next(new_param))
+                        condition = 1
+                    else:
+                        condition = -1
+                else:
                     param.data.copy_(next(new_param))
+                    condition = 0
 
             new_param = self.policies[best_net_idx].actor_target.parameters()
             for param in self.policies[idx].actor.parameters():
-                if random.random() < threshold:
+                if condition == -1:
+                    next(new_param)
+                    condition = 0
+                elif condition == 0:
+                    if random.random() < threshold:
+                        param.data.copy_(next(new_param))
+                        condition = 1
+                    else:
+                        condition = -1
+                else:
                     param.data.copy_(next(new_param))
+                    condition = 0
 
             new_param = self.policies[best_net_idx].critic_1.parameters()
             for param in self.policies[idx].critic_1.parameters():
-                if random.random() < threshold:
+                if condition == -1:
+                    next(new_param)
+                    condition = 0
+                elif condition == 0:
+                    if random.random() < threshold:
+                        param.data.copy_(next(new_param))
+                        condition = 1
+                    else:
+                        condition = -1
+                else:
                     param.data.copy_(next(new_param))
+                    condition = 0
 
             new_param = self.policies[best_net_idx].critic_1_target.parameters()
             for param in self.policies[idx].critic_1.parameters():
-                if random.random() < threshold:
+                if condition == -1:
+                    next(new_param)
+                    condition = 0
+                elif condition == 0:
+                    if random.random() < threshold:
+                        param.data.copy_(next(new_param))
+                        condition = 1
+                    else:
+                        condition = -1
+                else:
                     param.data.copy_(next(new_param))
+                    condition = 0
 
             new_param = self.policies[best_net_idx].critic_2.parameters()
             for param in self.policies[idx].actor.parameters():
-                if random.random() < threshold:
+                if condition == -1:
+                    next(new_param)
+                    condition = 0
+                elif condition == 0:
+                    if random.random() < threshold:
+                        param.data.copy_(next(new_param))
+                        condition = 1
+                    else:
+                        condition = -1
+                else:
                     param.data.copy_(next(new_param))
+                    condition = 0
 
             new_param = self.policies[best_net_idx].critic_2_target.parameters()
             for param in self.policies[idx].actor.parameters():
-                if random.random() < threshold:
+                if condition == -1:
+                    next(new_param)
+                    condition = 0
+                elif condition == 0:
+                    if random.random() < threshold:
+                        param.data.copy_(next(new_param))
+                        condition = 1
+                    else:
+                        condition = -1
+                else:
                     param.data.copy_(next(new_param))
+                    condition = 0
 
             print("<exploit", idx, "> Wczytano nowe wagi z sieci nr ", best_net_idx)
         else:
