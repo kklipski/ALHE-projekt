@@ -233,7 +233,10 @@ class EvolutionaryTD3:
                     else:
                         no_reward_counter = 0
 
-                    if no_reward_counter > self.stop_condition:
+                    # jeśli robot stoi w miejscu dłuższy czas, ustaw flagę
+                    stand_flag = no_reward_counter > self.stop_condition
+
+                    if stand_flag:
                         stuck_pen_flag = True
                         if -100 <= ep_reward:
                             reward = reward + -100
@@ -266,8 +269,6 @@ class EvolutionaryTD3:
                     avg_reward += reward
                     ep_reward += reward
 
-                    # jeśli robot stoi w miejscu dłuższy czas, ustaw flagę
-                    stand_flag = no_reward_counter > self.stop_condition
 
                     # if episode is done then update policy:
                     if done or t == (max_timesteps - 1) or stand_flag:
