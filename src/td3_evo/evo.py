@@ -95,6 +95,8 @@ class EvolutionaryTD3:
 
         :param idx: indeks sieci, dla której wywołujemy exploit()
         """
+        exploit_flag = False
+        exploit_num = 0
 
         # losujemy indeks sieci różnej od obecnej
         random_idx = random.randrange(self.n)
@@ -103,9 +105,11 @@ class EvolutionaryTD3:
 
         # wybieramy lepszą sieć
         best_net_idx, mean_diff = self.pick_net(idx, random_idx)
+        exploit_idx = best_net_idx
 
         # jeśli wylosowana sieć okazała się być lepsza
         if idx != best_net_idx:
+            exploit_flag = True
             # kopiujemy tylko część wag z nowej sieci - im większa jest różnica między średnimi cząstkowymi nagrodami
             # dla rozpatrywanych sieci, tym więcej wag zostanie podmienionych (ich ilość zmienia się progowo)
 
@@ -115,6 +119,7 @@ class EvolutionaryTD3:
             else:
                 to_pick = 2
 
+            exploit_num = to_pick
             self.copy_weights(self.policies[best_net_idx].actor, self.policies[idx].actor, to_pick)
             self.copy_weights(self.policies[best_net_idx].actor_target, self.policies[idx].actor_target, to_pick)
             self.copy_weights(self.policies[best_net_idx].critic_1, self.policies[idx].critic_1, to_pick)
@@ -130,14 +135,20 @@ class EvolutionaryTD3:
                   mean(self.last_ten_scores[idx]), " vs. ",
                   mean(self.last_ten_scores[best_net_idx]))
 
+        return exploit_flag, exploit_idx, exploit_num
+
+
     def explore(self, idx):
 
         if random.random() < 0.5:
-            self.multiply_weights(idx, self.explore_factors[0])
-            print("<explore", idx, "> Przemnożono wagi przez ", self.explore_factors[0])
+            multiplier = self.explore_factors[0]
         else:
-            self.multiply_weights(idx, self.explore_factors[1])
-            print("<explore", idx, "> Przemnożono wagi przez ", self.explore_factors[1])
+            multiplier = self.explore_factors[1]
+
+        self.multiply_weights(idx, multiplier)
+        print("<explore", idx, "> Przemnożono wagi przez ", self.explore_factors[1])
+
+        return multiplier
 
     def pick_net(self, idx1, idx2):
         """
@@ -187,6 +198,11 @@ class EvolutionaryTD3:
                 # logging variables:
                 avg_reward = 0
                 ep_reward = 0
+                exploit_flag = False
+                exploit_num = 0
+                exploit_idx = 0
+                explore_flag = False
+                explore_multiplier = 0
 
                 state = self.envs[idx].reset()
                 no_reward_counter = -100  # jeśli dojdzie do 100 uznajemy, że robot się nie porusza
@@ -227,12 +243,18 @@ class EvolutionaryTD3:
 
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
                 if episode % self.episodes_ready[idx] == 0 and episode != 0:
-                    self.exploit(idx)
-                    if random.random() < self.explore_prob:
-                        self.explore(idx)
+                    exploit_flag, exploit_idx, exploit_num = self.exploit(idx)
+                    if exploit_flag and random.random() < self.explore_prob:
+                        explore_multiplier = self.explore(idx)
+                        explore_flag = True
 
                 # logging updates:
-                log_f.write('{},{},{}\n'.format(idx, episode, ep_reward))
+                log_f.write('{},{},{}'.format(idx, episode, ep_reward))
+                if exploit_flag:
+                    log_f.write(",exploit:" + str(exploit_idx) + "," + str(exploit_num))
+                if explore_flag:
+                    log_f.write(",explore:" + str(explore_multiplier))
+                log_f.write("\n")
                 log_f.flush()
                 ep_reward = 0
 
