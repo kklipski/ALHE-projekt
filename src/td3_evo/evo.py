@@ -22,7 +22,7 @@ class EvolutionaryTD3:
         if len(self.episodes_ready) < n_networks:
             print("episodes_ready.len() != n_networks")
             raise Exception
-		if min(self.episodes_ready) < saved_scores:
+        if min(self.episodes_ready) < saved_scores:
             print("episodes_ready.min() < saved_scores")
             raise Exception
 
@@ -243,7 +243,7 @@ class EvolutionaryTD3:
 
                 self.append_score(idx, ep_reward)
 
-				# print avg reward every log interval:
+                # print avg reward every log interval:
                 if episode % log_interval == 0:
                     avg_reward = int(avg_reward / log_interval)
                     print("Episode: {}\tAverage Reward: {}".format(episode, avg_reward))
