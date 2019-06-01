@@ -116,7 +116,7 @@ class EvolutionaryTD3:
             # dla rozpatrywanych sieci, tym więcej wag zostanie podmienionych (ich ilość zmienia się progowo)
 
             # kopiujemy 1 albo 2 wylosowane tensory
-            if 0 <= mean_diff < 30:
+            if 0 <= mean_diff < 25:
                 to_pick = 1
             else:
                 to_pick = 2
@@ -238,30 +238,27 @@ class EvolutionaryTD3:
 
                     if stand_flag:
                         stuck_pen_flag = True
-                        if -100 <= ep_reward:
-                            reward = reward + -100
-                            stuck_pen = -100
-                        elif -100 < ep_reward <= -50:
-                            reward = reward + -50
-                            stuck_pen = -50
-                        elif -50 < ep_reward <= 0:
-                            reward = reward + -40
-                            stuck_pen = -40
+                        if ep_reward <= 0:
+                            reward = reward + -64
+                            stuck_pen = -64
                         elif 0 < ep_reward <= 50:
-                            reward = reward + -30
-                            stuck_pen = -30
+                            reward = reward + -49
+                            stuck_pen = -49
                         elif 50 < ep_reward <= 100:
-                            reward = reward + -20
-                            stuck_pen = -20
+                            reward = reward + -36
+                            stuck_pen = -36
                         elif 100 < ep_reward <= 150:
-                            reward = reward + -10
-                            stuck_pen = -10
+                            reward = reward + -25
+                            stuck_pen = -25
                         elif 150 < ep_reward <= 200:
-                            reward = reward + -5
-                            stuck_pen = -5
+                            reward = reward + -16
+                            stuck_pen = -16
+                        elif 200 < ep_reward <= 250:
+                            reward = reward + -9
+                            stuck_pen = -9
                         else:
-                            reward = reward + 0
-                            stuck_pen = 0
+                            reward = reward + -4
+                            stuck_pen = -4
 
                     self.replay_buffers[idx].add((state, action, reward, next_state, float(done)))
                     state = next_state
