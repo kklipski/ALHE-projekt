@@ -205,6 +205,8 @@ class EvolutionaryTD3:
                 exploit_idx = 0
                 explore_flag = False
                 explore_multiplier = 0
+                stuck_pen_flag = False
+                stuck_pen = 0
 
                 state = self.envs[idx].reset()
                 no_reward_counter = -100  # jeśli dojdzie do 100 uznajemy, że robot się nie porusza
@@ -230,22 +232,31 @@ class EvolutionaryTD3:
                         no_reward_counter = 0
 
                     if no_reward_counter > self.stop_condition:
+                        stuck_pen_flag = True
                         if -100 <= ep_reward:
                             reward = reward + -100
+                            stuck_pen = -100
                         elif -100 < ep_reward <= -50:
                             reward = reward + -50
+                            stuck_pen = -50
                         elif -50 < ep_reward <= 0:
                             reward = reward + -40
+                            stuck_pen = -40
                         elif 0 < ep_reward <= 50:
                             reward = reward + -30
+                            stuck_pen = -30
                         elif 50 < ep_reward <= 100:
                             reward = reward + -20
+                            stuck_pen = -20
                         elif 100 < ep_reward <= 150:
                             reward = reward + -10
+                            stuck_pen = -10
                         elif 150 < ep_reward <= 200:
                             reward = reward + -5
+                            stuck_pen = -5
                         else:
                             reward = reward + 0
+                            stuck_pen = 0
 
                     self.replay_buffers[idx].add((state, action, reward, next_state, float(done)))
                     state = next_state
@@ -276,6 +287,8 @@ class EvolutionaryTD3:
 
                 # logging updates:
                 log_f.write('{},{},{}'.format(idx, episode, ep_reward))
+                if stuck_pen_flag:
+                    log_f.write(",stuck penalty:" + str(stuck_pen))
                 if exploit_flag:
                     log_f.write(",exploit:" + str(exploit_idx) + "," + str(exploit_num))
                 if explore_flag:
