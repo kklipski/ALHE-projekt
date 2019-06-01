@@ -22,14 +22,17 @@ class EvolutionaryTD3:
         if len(self.episodes_ready) < n_networks:
             print("episodes_ready.len() != n_networks")
             raise Exception
+		if min(self.episodes_ready) < saved_scores:
+            print("episodes_ready.min() < saved_scores")
+            raise Exception
 
         self.explore_prob = explore_prob - int(explore_prob)
         self.explore_factors = explore_factors
 
         self.lr = 0.001
 
-        # początkowe ostatnie 10 cząstkowych wyników dla wszystkich sieci ustawiamy na -100
-        self.last_ten_scores = [[-100 for _ in range(saved_scores)] for _ in range(self.n)]
+        # początkowe ostatnie x cząstkowych wyników dla wszystkich sieci ustawiamy na -100
+        self.last_x_scores = [[-100 for _ in range(saved_scores)] for _ in range(self.n)]
 
         self.envs = self.create_envs()
         self.policies = self.create_policies()
@@ -77,7 +80,7 @@ class EvolutionaryTD3:
         for i in range(picking):
             r = random.randint(0, 2)
 
-            while r in indexes:  # żeby się indeksy nie powtarzały
+            while 2 * r in indexes:  # żeby się indeksy nie powtarzały
                 r = random.randint(0, 2)
 
             indexes.append(2 * r)  # 0,2,4
@@ -92,7 +95,6 @@ class EvolutionaryTD3:
         a następnie porównaniu ostatnich 10 cząstkowych nagród przy użyciu Welch’s t-test.
         Jeśli próbkowany agent ma wyższą średnią cząstkową nagrodę i spełnia warunki t-test,
         wagi z hiperparametrami są kopiowane do obecnego agenta.
-
         :param idx: indeks sieci, dla której wywołujemy exploit()
         """
         exploit_flag = False
@@ -128,12 +130,12 @@ class EvolutionaryTD3:
             self.copy_weights(self.policies[best_net_idx].critic_2_target, self.policies[idx].critic_2_target, to_pick)
 
             print("<exploit", idx, "> Wczytano nowe wagi z sieci nr ", best_net_idx, random_idx, "\t",
-                  mean(self.last_ten_scores[idx]), " vs. ",
-                  mean(self.last_ten_scores[best_net_idx]))
+                  mean(self.last_x_scores[idx]), " vs. ",
+                  mean(self.last_x_scores[best_net_idx]))
         else:
             print("<exploit", idx, "> Wagi zostają, obecne są lepsze od sieci nr ", random_idx, "\t",
-                  mean(self.last_ten_scores[idx]), " vs. ",
-                  mean(self.last_ten_scores[best_net_idx]))
+                  mean(self.last_x_scores[idx]), " vs. ",
+                  mean(self.last_x_scores[best_net_idx]))
 
         return exploit_flag, exploit_idx, exploit_num
 
@@ -146,7 +148,7 @@ class EvolutionaryTD3:
             multiplier = self.explore_factors[1]
 
         self.multiply_weights(idx, multiplier)
-        print("<explore", idx, "> Przemnożono wagi przez ", self.explore_factors[1])
+        print("<explore", idx, "> Przemnożono wagi przez ", multiplier)
 
         return multiplier
 
@@ -158,12 +160,12 @@ class EvolutionaryTD3:
         :return: indeks najlepszej sieci
         """
 
-        statistic, pvalue = scipy.stats.ttest_ind(self.last_ten_scores[idx1], self.last_ten_scores[idx2],
+        statistic, pvalue = scipy.stats.ttest_ind(self.last_x_scores[idx1], self.last_x_scores[idx2],
                                                   equal_var=False)
         if pvalue <= 0.05:
             # przeszło welch's t-test, teraz porównanie średnich z ostatnich 10 wyników
-            mean_curr = mean(self.last_ten_scores[idx1])
-            mean_rand = mean(self.last_ten_scores[idx2])
+            mean_curr = mean(self.last_x_scores[idx1])
+            mean_rand = mean(self.last_x_scores[idx2])
             mean_diff = abs(mean_curr - mean_rand)
             if mean_curr > mean_rand:
                 return idx1, 0  # obecna sieć lepsza
@@ -241,6 +243,12 @@ class EvolutionaryTD3:
 
                 self.append_score(idx, ep_reward)
 
+				# print avg reward every log interval:
+                if episode % log_interval == 0:
+                    avg_reward = int(avg_reward / log_interval)
+                    print("Episode: {}\tAverage Reward: {}".format(episode, avg_reward))
+                    avg_reward = 0
+
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
                 if episode % self.episodes_ready[idx] == 0 and episode != 0:
                     exploit_flag, exploit_idx, exploit_num = self.exploit(idx)
@@ -266,15 +274,8 @@ class EvolutionaryTD3:
                     log_f.close()
                     break
 
-                if episode > 500:
+                if episode % 300 == 0 and episode != 0:
                     self.policies[idx].save(directory, filename)
-
-                # print avg reward every log interval:
-                if episode % log_interval == 0:
-                    avg_reward = int(avg_reward / log_interval)
-                    print("Episode: {}\tAverage Reward: {}".format(episode, avg_reward))
-                    avg_reward = 0
-
 
     def append_score(self, idx, new_score):
         """
@@ -282,7 +283,7 @@ class EvolutionaryTD3:
         :param idx: indeks sieci
         :param new_score: nowy wynik
         """
-        self.last_ten_scores[idx] = self.last_ten_scores[idx][1:]
-        self.last_ten_scores[idx].append(new_score)
+        self.last_x_scores[idx] = self.last_x_scores[idx][1:]
+        self.last_x_scores[idx].append(new_score)
 
 
