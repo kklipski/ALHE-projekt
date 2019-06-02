@@ -102,7 +102,7 @@ def train():
             ep_reward += reward
             
             # if episode is done then update policy:
-            if done or t == (max_timesteps-1):
+            if done or t == (max_timesteps-1) or stand_flag:
                 policy.update(replay_buffer, t, batch_size, gamma, polyak, policy_noise, noise_clip, policy_delay)
                 break
         
