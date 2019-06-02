@@ -192,13 +192,15 @@ class EvolutionaryTD3:
         ###################################
 
         log_f = open("log.txt", "w+")
+
+        avg_reward = np.zeros(self.n)
+
         # Liczba iteracji algorytmu
         for episode in range(self.max_episodes):
 
             for idx in range(self.n):
 
                 # logging variables:
-                avg_reward = 0
                 ep_reward = 0
                 exploit_flag = False
                 exploit_num = 0
@@ -239,8 +241,8 @@ class EvolutionaryTD3:
                     if stand_flag:
                         stuck_pen_flag = True
                         if ep_reward <= 0:
-                            reward = reward + -64
-                            stuck_pen = -64
+                            reward = reward + -100
+                            stuck_pen = -100
                         elif 0 < ep_reward <= 50:
                             reward = reward + -49
                             stuck_pen = -49
@@ -263,7 +265,7 @@ class EvolutionaryTD3:
                     self.replay_buffers[idx].add((state, action, reward, next_state, float(done)))
                     state = next_state
 
-                    avg_reward += reward
+                    avg_reward[idx] += reward
                     ep_reward += reward
 
 
@@ -277,9 +279,8 @@ class EvolutionaryTD3:
 
                 # print avg reward every log interval:
                 if episode % log_interval == 0:
-                    avg_reward = int(avg_reward / log_interval)
-                    print("Episode: {}\tAverage Reward: {}".format(episode, avg_reward))
-                    avg_reward = 0
+                    print("Episode: {}\tAverage Reward: {}".format(episode, int(avg_reward[idx] / log_interval)))
+                    avg_reward[idx] = 0
 
                 # każda sieć ma swój max epizodów, po których zostaną wywołane metody exploit i explore
                 if episode % self.episodes_ready[idx] == 0 and episode != 0:
@@ -302,15 +303,15 @@ class EvolutionaryTD3:
                 log_f.flush()
                 ep_reward = 0
 
-                # if avg reward > 300 then save and stop traning:
-                if (avg_reward/log_interval) >= 300:
+                # if ep reward > 300 then save and stop traning:
+                if ep_reward >= 300:
                     print("########## Solved! ###########")
                     name = filename + '_net_{}_solved'.format(idx)
                     self.policies[idx].save(directory, name)
                     log_f.close()
                     break
 
-            if episode % 300 == 0 and episode != 0:
+            if episode % 100 == 0 and episode != 0:
                 self.save_nets(episode, directory, filename)
 
     def append_score(self, idx, new_score):
