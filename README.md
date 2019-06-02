@@ -25,13 +25,13 @@ pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp37-cp37m-win_a
 7. W celu przeprowadzenia uczenia ze wzmocnieniem połączonego z algorytmem ewolucyjnym należy uruchomić skrypt [test_evo.py](src/td3_evo/test_evo.py) z folderu [td3_evo](src/td3_evo).
 
 ## Testy
-1. wariant: standardowe TD3 (z ograniczeniem ilości kroków bez ruchu oraz karami za zatrzymywanie się i utykanie w miejscu)
-2. wariant: parametry: n_networks = 5, saved_scores = 5, episodes_ready = [5, 7, 10, 15, 20], explore_prob = 0.05, explore_factors = [0.99, 1.01]
-3. wariant: parametry: n_networks = 10, saved_scores = 5, episodes_ready = [10, 11, 12, 15, 20, 25, 30, 40, 50], explore_prob = 0.05, explore_factors = [0.99, 1.01]
-4. wariant: parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.5, explore_factors = [0.95, 1.05]
-5. wariant: parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30, 35, 40, 45, 50], explore_prob = 0.5, explore_factors = [0.95, 1.05]
-6. wariant: parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.05, explore_factors = [0.99, 1.01]
-7. wariant: parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30, 35, 40, 45, 50], explore_prob = 0.05, explore_factors = [0.99, 1.01]
+1. standardowe TD3 (z ograniczeniem ilości kroków bez ruchu oraz karami za zatrzymywanie się i utykanie w miejscu)
+2. parametry: n_networks = 5, saved_scores = 5, episodes_ready = [5, 7, 10, 15, 20], explore_prob = 0.05, explore_factors = [0.99, 1.01]
+3. parametry: n_networks = 10, saved_scores = 5, episodes_ready = [10, 11, 12, 15, 20, 25, 30, 40, 50], explore_prob = 0.05, explore_factors = [0.99, 1.01]
+4. parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.5, explore_factors = [0.95, 1.05]
+5. parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30, 35, 40, 45, 50], explore_prob = 0.5, explore_factors = [0.95, 1.05]
+6. parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.05, explore_factors = [0.99, 1.01]
+7. parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30, 35, 40, 45, 50], explore_prob = 0.05, explore_factors = [0.99, 1.01]
 
 Każdy z testów zostanie przeprowadzony trzykrotnie w celu walidacji wyników; w sumie: 21 testów.
 
