@@ -45,3 +45,5 @@ Każdy z testów, oprócz wariantów 1. i 6., zostanie przeprowadzony trzykrotni
 - https://deepmind.com/blog/population-based-training-neural-networks/ - Population based training of neural networks (blog post)
 - https://github.com/vy007vikas/PyTorch-ActorCriticRL - PyTorch implementation of DDPG algorithm for continuous action reinforcement learning problem (used in the project) (**DEPRECATED**)
 - https://github.com/nikhilbarhate99/TD3-PyTorch-BipedalWalker-v2 - Twin Delayed DDPG (TD3) PyTorch solution for Roboschool and Box2d environment (used in the project)
+
+![](bipedalwalker_v2.gif)
