@@ -5,6 +5,8 @@ Korzystając ze środowiska OpenAI Gym: https://gym.openai.com/envs/#box2d zaimp
 
 **Dokumentacja wstępna:** https://docs.google.com/document/d/1SGi361dUx475NzdJJFqGgjtpwL87CuuYX02KqkK1vzs/edit# 
 
+**Dokumentacja końcowa:** https://docs.google.com/document/d/1bv8zoB7cyC3gjCCWxG4fd6qIAJRbG4XtrsH5_Z5fvVI/edit
+
 ## Kroki
 1. Sklonuj pliki projektu używając komendy:
 ```
@@ -27,13 +29,12 @@ pip3 install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp37-cp37m-win_a
 ## Testy
 1. standardowe TD3 (z ograniczeniem ilości kroków bez ruchu oraz karami za zatrzymywanie się i utykanie w miejscu)
 2. parametry: n_networks = 5, saved_scores = 5, episodes_ready = [5, 7, 10, 15, 20], explore_prob = 0.05, explore_factors = [0.99, 1.01]
-3. parametry: n_networks = 10, saved_scores = 5, episodes_ready = [5, 6, 7, 8, 9, 10, 11, 12, 15, 20], explore_prob = 0.05, explore_factors = [0.99, 1.01]
-4. parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.5, explore_factors = [0.95, 1.05]
-5. parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 11, 12, 13, 14, 15, 16, 20, 25, 30], explore_prob = 0.5, explore_factors = [0.95, 1.05]
-6. parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.05, explore_factors = [0.99, 1.01]
-7. parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 11, 12, 13, 14, 15, 16, 20, 25, 30], explore_prob = 0.05, explore_factors = [0.99, 1.01]
+3. parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.5, explore_factors = [0.95, 1.05]
+4. parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 11, 12, 13, 14, 15, 16, 20, 25, 30], explore_prob = 0.5, explore_factors = [0.95, 1.05]
+5. parametry: n_networks = 5, saved_scores = 10, episodes_ready = [10, 15, 20, 25, 30], explore_prob = 0.05, explore_factors = [0.99, 1.01]
+6. parametry: n_networks = 10, saved_scores = 10, episodes_ready = [10, 11, 12, 13, 14, 15, 16, 20, 25, 30], explore_prob = 0.05, explore_factors = [0.99, 1.01]
 
-Każdy z testów zostanie przeprowadzony trzykrotnie w celu walidacji wyników; w sumie: 21 testów.
+Każdy z testów, oprócz wariantów 1. i 6., zostanie przeprowadzony trzykrotnie w celu walidacji wyników (wariant 1. zostanie powtórzony pięciokrotnie, a wariant 6. - dwukrotnie); w sumie: 19 testów.
 
 ## Autorzy
 - **Lipski Kamil** - [kklipski](https://github.com/kklipski)
